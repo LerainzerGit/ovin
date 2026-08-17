@@ -3,6 +3,11 @@ name: Build Ovin ISO
 on:
   push:
     branches: [main]
+    paths:
+      - "config/package-list.txt"
+      - "config/branding/**"
+      - "VERSION"
+      - ".github/workflows/build-iso.yml"
   workflow_dispatch: {}
 
 jobs:
