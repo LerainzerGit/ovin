@@ -24,13 +24,30 @@
 
   <script src="https://cdn.jsdelivr.net/npm/v86/build/libv86.js"></script>
   <script>
-    const REPO = "__REPO__";
+       const REPO = "__REPO__";
     const TAG = "__RELEASE_TAG__";
     const ISO_NAME = "__ISO_NAME__";
     const isoUrl = `https://github.com/${REPO}/releases/download/${TAG}/${ISO_NAME}`;
 
     document.getElementById("boot_btn").addEventListener("click", () => {
       document.getElementById("status").textContent = "Booting… (this can take a while on first load)";
+      console.log("Loading ISO from:", isoUrl);
+
+      fetch(isoUrl, { method: "HEAD" })
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(`ISO fetch failed: HTTP ${res.status}`);
+          }
+          startEmulator();
+        })
+        .catch((err) => {
+          console.error(err);
+          document.getElementById("status").textContent =
+            "Failed to load ISO — likely a CORS or network issue. Check the browser console (F12) for details. Error: " + err.message;
+        });
+    });
+
+    function startEmulator() {
       const emulator = new V86({
         wasm_path: "https://cdn.jsdelivr.net/npm/v86/build/v86.wasm",
         memory_size: 512 * 1024 * 1024,
@@ -44,7 +61,7 @@
       emulator.add_listener("emulator-ready", () => {
         document.getElementById("status").textContent = "Emulator ready, booting ISO…";
       });
-    });
+    }
   </script>
 </body>
 </html>
