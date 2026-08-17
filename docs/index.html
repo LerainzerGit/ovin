@@ -15,7 +15,7 @@
 <body>
   <h1>Ovin v86 Edition — Boot in your browser</h1>
   <p>This boots the Ovin v86 Edition ISO using <a href="https://github.com/copy/v86" target="_blank">v86</a>, a WASM x86 emulator. No download needed — everything runs in this tab.</p>
-  <p><b>Heads up:</b> this is a minimal, console-only, BIOS-bootable build made specifically for v86 — not the full XFCE desktop ISO. Software emulation is slow with no GPU acceleration, so this is meant for a quick "does it boot" check, not daily use.</p>
+  <p><b>Heads up:</b> this is a minimal, console-only build made specifically for v86 — not the full XFCE desktop ISO. Software emulation is slow with no GPU acceleration, so this is meant for a quick "does it boot" check, not daily use.</p>
   <button id="boot_btn">Boot Ovin v86 Edition</button>
   <div id="status">Idle.</div>
   <div id="screen_container">
@@ -36,8 +36,7 @@
         memory_size: 512 * 1024 * 1024,
         vga_memory_size: 8 * 1024 * 1024,
         screen_container: document.getElementById("screen"),
-        bios: { url: "https://cdn.jsdelivr.net/npm/v86/bios/seabios.bin" },
-        vga_bios: { url: "https://cdn.jsdelivr.net/npm/v86/bios/vgabios.bin" },
+        bios: { url: "https://cdn.jsdelivr.net/npm/v86/bios/OVMF.fd" },
         cdrom: { url: isoUrl },
         autostart: true,
       });
