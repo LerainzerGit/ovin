@@ -29,8 +29,7 @@ jobs:
             --distribution noble \
             --architecture amd64 \
             --binary-images iso-hybrid \
-            --archive-areas "main restricted universe multiverse" \
-            --debian-installer none
+            --archive-areas "main restricted universe multiverse"
 
       - name: Add package list
         run: |
