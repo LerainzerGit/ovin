@@ -1,0 +1,4 @@
+firefox
+git
+gnome-terminal
+vlc
