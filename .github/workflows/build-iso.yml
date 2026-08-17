@@ -1,0 +1,74 @@
+name: Build Ovin ISO
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install live-build and deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y live-build debootstrap syslinux-utils xorriso
+
+      - name: Read version
+        id: ver
+        run: echo "version=$(cat VERSION | tr -d '[:space:]')" >> "$GITHUB_OUTPUT"
+
+      - name: Configure live-build
+        run: |
+          mkdir -p build
+          cd build
+          lb config \
+            --distribution noble \
+            --architecture amd64 \
+            --binary-images iso-hybrid \
+            --archive-areas "main restricted universe multiverse" \
+            --debian-installer none
+
+      - name: Add package list
+        run: |
+          mkdir -p build/config/package-lists
+          cp config/package-list.txt build/config/package-lists/ovin.list.chroot
+          cat >> build/config/package-lists/ovin.list.chroot <<'EOF'
+          xfce4
+          xfce4-goodies
+          lightdm
+          lightdm-gtk-greeter
+          network-manager-gnome
+          EOF
+
+      - name: Apply branding
+        run: |
+          mkdir -p build/config/includes.chroot/etc
+          if [ -f config/branding/os-release ]; then
+            cp config/branding/os-release build/config/includes.chroot/etc/os-release
+          fi
+          mkdir -p build/config/includes.chroot/usr/share/backgrounds/ovin
+          if [ -f config/branding/wallpaper.png ]; then
+            cp config/branding/wallpaper.png build/config/includes.chroot/usr/share/backgrounds/ovin/wallpaper.png
+          fi
+
+      - name: Build ISO
+        run: |
+          cd build
+          sudo lb build
+
+      - name: Rename ISO
+        run: |
+          find build -maxdepth 1 -iname "*.iso" -exec mv {} ovin-${{ steps.ver.outputs.version }}.iso \;
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.ver.outputs.version }}-${{ github.run_number }}
+          name: Ovin ${{ steps.ver.outputs.version }} (build ${{ github.run_number }})
+          files: ovin-${{ steps.ver.outputs.version }}.iso
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
