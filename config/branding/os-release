@@ -1,0 +1,7 @@
+NAME="Ovin"
+VERSION="0.1.0"
+ID=ovin
+ID_LIKE=ubuntu
+PRETTY_NAME="Ovin 0.1.0"
+VERSION_ID="0.1.0"
+HOME_URL="https://github.com/"
