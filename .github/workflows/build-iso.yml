@@ -5,7 +5,7 @@ on:
     branches: [main]
   workflow_dispatch: {}
 
-   jobs:
+jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
@@ -33,7 +33,7 @@ on:
             --binary-images iso \
             --bootloader grub-efi \
             --archive-areas "main restricted universe multiverse"
-            
+
       - name: Add package list
         run: |
           mkdir -p build/config/package-lists
