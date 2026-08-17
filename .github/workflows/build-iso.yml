@@ -28,7 +28,7 @@ jobs:
           lb config \
             --distribution noble \
             --architecture amd64 \
-            --binary-images iso-hybrid \
+            --binary-images iso \
             --bootloader grub-efi \
             --archive-areas "main restricted universe multiverse"
             
