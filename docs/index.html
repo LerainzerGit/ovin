@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Ovin — Boot in Browser</title>
+<style>
+  body { background:#111; color:#eee; font-family: sans-serif; margin:0; padding:20px; }
+  h1 { color:#7fd; }
+  #screen_container { border:2px solid #7fd; width: 100%; max-width: 960px; margin-top: 16px; overflow:auto; background:#000; }
+  #status { margin-top: 10px; color: #aaa; font-size: 14px; }
+  button { background:#7fd; color:#111; border:none; padding:10px 18px; font-size:16px; border-radius:6px; cursor:pointer; }
+  a { color:#7fd; }
+</style>
+</head>
+<body>
+  <h1>Ovin v86 Edition — Boot in your browser</h1>
+  <p>This boots the Ovin v86 Edition ISO using <a href="https://github.com/copy/v86" target="_blank">v86</a>, a WASM x86 emulator. No download needed — everything runs in this tab.</p>
+  <p><b>Heads up:</b> this is a minimal, console-only, BIOS-bootable build made specifically for v86 — not the full XFCE desktop ISO. Software emulation is slow with no GPU acceleration, so this is meant for a quick "does it boot" check, not daily use.</p>
+  <button id="boot_btn">Boot Ovin v86 Edition</button>
+  <div id="status">Idle.</div>
+  <div id="screen_container">
+    <div id="screen"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/v86/build/libv86.js"></script>
+  <script>
+    const REPO = "__REPO__";
+    const TAG = "__RELEASE_TAG__";
+    const ISO_NAME = "__ISO_NAME__";
+    const isoUrl = `https://github.com/${REPO}/releases/download/${TAG}/${ISO_NAME}`;
+
+    document.getElementById("boot_btn").addEventListener("click", () => {
+      document.getElementById("status").textContent = "Booting… (this can take a while on first load)";
+      const emulator = new V86({
+        wasm_path: "https://cdn.jsdelivr.net/npm/v86/build/v86.wasm",
+        memory_size: 512 * 1024 * 1024,
+        vga_memory_size: 8 * 1024 * 1024,
+        screen_container: document.getElementById("screen"),
+        bios: { url: "https://cdn.jsdelivr.net/npm/v86/bios/seabios.bin" },
+        vga_bios: { url: "https://cdn.jsdelivr.net/npm/v86/bios/vgabios.bin" },
+        cdrom: { url: isoUrl },
+        autostart: true,
+      });
+
+      emulator.add_listener("emulator-ready", () => {
+        document.getElementById("status").textContent = "Emulator ready, booting ISO…";
+      });
+    });
+  </script>
+</body>
+</html>
