@@ -5,8 +5,8 @@ on:
     branches: [main]
     paths:
       - "config/v86/**"
+      - "docs/**"
       - ".github/workflows/build-iso-v86.yml"
-      - "VERSION"
   workflow_dispatch: {}
 
 jobs:
@@ -32,16 +32,15 @@ jobs:
           echo "version=$v" >> "$GITHUB_OUTPUT"
           echo "tag=v86-${v}-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
 
-      - name: Configure live-build (BIOS/syslinux for v86)
+      - name: Configure live-build (UEFI/grub for v86)
         run: |
           mkdir -p build
           cd build
           lb config \
             --distribution noble \
             --architecture amd64 \
-            --binary-images iso-hybrid \
-            --bootloader syslinux \
-            --apt-recommends false \
+            --binary-images iso \
+            --bootloader grub-efi \
             --archive-areas "main restricted universe multiverse"
 
       - name: Add package list (console only, v86 has no GPU accel)
