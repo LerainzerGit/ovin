@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - "config/v86/**"
-      - "docs/**"
+      - "index.html"
       - ".github/workflows/build-iso-v86.yml"
   workflow_dispatch: {}
 
@@ -87,9 +87,9 @@ jobs:
 
       - name: Inject release info into boot page
         run: |
-          sed -i "s#__RELEASE_TAG__#${{ needs.build.outputs.tag }}#g" docs/index.html
-          sed -i "s#__REPO__#${{ github.repository }}#g" docs/index.html
-          sed -i "s#__ISO_NAME__#ovin-v86-$(cat VERSION | tr -d '[:space:]').iso#g" docs/index.html
+          sed -i "s#__RELEASE_TAG__#${{ needs.build.outputs.tag }}#g" index.html
+          sed -i "s#__REPO__#${{ github.repository }}#g" index.html
+          sed -i "s#__ISO_NAME__#ovin-v86-$(cat VERSION | tr -d '[:space:]').iso#g" index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -97,7 +97,7 @@ jobs:
       - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs
+          path: .
 
       - name: Deploy to GitHub Pages
         id: deployment
