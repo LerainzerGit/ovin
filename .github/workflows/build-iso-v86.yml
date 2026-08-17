@@ -48,6 +48,9 @@ jobs:
         run: |
           mkdir -p build/config/package-lists
           cat > build/config/package-lists/ovin-v86.list.chroot <<'EOF'
+          linux-image-generic
+          initramfs-tools
+          live-boot
           git
           nano
           EOF
