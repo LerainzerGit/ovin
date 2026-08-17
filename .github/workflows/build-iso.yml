@@ -29,8 +29,9 @@ jobs:
             --distribution noble \
             --architecture amd64 \
             --binary-images iso-hybrid \
+            --bootloaders grub-efi \
             --archive-areas "main restricted universe multiverse"
-
+            
       - name: Add package list
         run: |
           mkdir -p build/config/package-lists
