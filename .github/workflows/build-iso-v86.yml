@@ -1,0 +1,102 @@
+name: Build Ovin v86 Edition
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "config/v86/**"
+      - ".github/workflows/build-iso-v86.yml"
+      - "VERSION"
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.ver.outputs.tag }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install live-build and deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y live-build debootstrap syslinux-utils xorriso
+
+      - name: Read version
+        id: ver
+        run: |
+          v=$(cat VERSION | tr -d '[:space:]')
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "tag=v86-${v}-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+
+      - name: Configure live-build (BIOS/syslinux for v86)
+        run: |
+          mkdir -p build
+          cd build
+          lb config \
+            --distribution noble \
+            --architecture amd64 \
+            --binary-images iso-hybrid \
+            --bootloader syslinux \
+            --apt-recommends false \
+            --archive-areas "main restricted universe multiverse"
+
+      - name: Add package list (console only, v86 has no GPU accel)
+        run: |
+          mkdir -p build/config/package-lists
+          cat > build/config/package-lists/ovin-v86.list.chroot <<'EOF'
+          git
+          nano
+          EOF
+
+      - name: Build ISO
+        run: |
+          cd build
+          sudo lb build
+
+      - name: Rename ISO
+        run: |
+          find build -maxdepth 1 -iname "*.iso" -exec mv {} ovin-v86-${{ steps.ver.outputs.version }}.iso \;
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: Ovin v86 Edition ${{ steps.ver.outputs.version }} (build ${{ github.run_number }})
+          files: ovin-v86-${{ steps.ver.outputs.version }}.iso
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  pages:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Inject release info into boot page
+        run: |
+          sed -i "s#__RELEASE_TAG__#${{ needs.build.outputs.tag }}#g" docs/index.html
+          sed -i "s#__REPO__#${{ github.repository }}#g" docs/index.html
+          sed -i "s#__ISO_NAME__#ovin-v86-$(cat VERSION | tr -d '[:space:]').iso#g" docs/index.html
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
